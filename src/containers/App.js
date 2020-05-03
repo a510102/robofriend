@@ -41,10 +41,7 @@ class App extends Component {
     const filteredRobots = robots.filter((robot) =>{ //篩選名字有符合搜尋的機器人
       return robot.name.toLowerCase().includes(searchField.toLowerCase());
     })
-      return !isPending ?
-      <h1 className="tc">Loading</h1> :
-        (
-        
+      return (
         <div className='tc'>
           <Header />
           <Searchbox 
@@ -52,9 +49,11 @@ class App extends Component {
             searchChange={onSearchChange} 
             />
           <Scroll>
+            {!isPending ?
+            <h1 className="tc">Loading</h1> :
             <ErrorBoundry>
               <CardList robots={ filteredRobots } />
-            </ErrorBoundry>
+            </ErrorBoundry>}
           </Scroll>  
         </div>
       );
