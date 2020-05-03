@@ -1,55 +1,64 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
+import Header from '../components/Header'
 import CardList from '../components/CardList';
 import Searchbox from '../components/Searchbox';
 import Scroll from '../components/Scroll';
 import ErrorBoundry from '../components/ErrorBoundry';
 import './App.css';
-import ErrorBounbry from '../components/ErrorBoundry';
 
+import { setSearchField, requestRobots } from '../action';
+
+//從redux取得資料
+
+const mapStateToProps = state => {
+  return {
+    searchField: state.searchRobots.searchField,
+    robots: state.requestRobots.robots,
+    isPending: state.requestRobots.isPending,
+    error: state.requestRobots.error,
+  }
+}
+
+//從compontent Dispatch資料上redux改變它
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: ()=>dispatch(requestRobots())
+  }
+}
 
 class App extends Component {
-  constructor(){
-    super();
-    this.state = {
-      robots: [],
-      seachfield:'',
-    }
-  }
- 
 
   componentDidMount() {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response=>  response.json())
-      .then(users =>this.setState({robots: users})); 
-  }
-  
-  onSearchChange = (event) => { //搜尋 因為 function(){}是this指向input 所以要使用arrow function 讓htis指向app 
-    const seachfield = event.target.value
-    this.setState( { seachfield });
+    this.props.onRequestRobots();
   }
   
   render() {
-    const {robots, seachfield} = this.state;
+    const { robots, searchField, onSearchChange, isPending } = this.props;
     const filteredRobots = robots.filter((robot) =>{ //篩選名字有符合搜尋的機器人
-      return robot.name.toLocaleLowerCase().includes(seachfield.toLocaleLowerCase());
+      return robot.name.toLowerCase().includes(searchField.toLowerCase());
     })
-      return !robots.length ?
+      return !isPending ?
       <h1 className="tc">Loading</h1> :
         (
+        
         <div className='tc'>
-          <h1 className='f2'>Robot Friend</h1>
+          <Header />
           <Searchbox 
-            seachfield={ seachfield }
-            searchChange={this.onSearchChange} 
+            seachfield={ searchField }
+            searchChange={onSearchChange} 
             />
           <Scroll>
-            <ErrorBounbry>
+            <ErrorBoundry>
               <CardList robots={ filteredRobots } />
-            </ErrorBounbry>
+            </ErrorBoundry>
           </Scroll>  
         </div>
       );
   }  
 }
 
-export default App ;
+export default connect(mapStateToProps, mapDispatchToProps)(App) ;
